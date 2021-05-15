@@ -1,7 +1,7 @@
 import "./ExpenseForm.css";
 import { useState } from "react";
 
-function ExpenseForm({ onSaveExpenseData }) {
+function ExpenseForm({ onSaveExpenseData, onHideForm }) {
    const initialExpense = {
       title: "",
       amount: "",
@@ -15,7 +15,12 @@ function ExpenseForm({ onSaveExpenseData }) {
          setEnteredExpense((prevState) => {
             return {
                ...prevState,
-               [key]: event.target.value,
+               [key]:
+                  key === "date"
+                     ? new Date(event.target.value)
+                     : key === "amount"
+                     ? +event.target.value
+                     : event.target.value,
             };
          });
       };
@@ -23,8 +28,10 @@ function ExpenseForm({ onSaveExpenseData }) {
 
    const onSubmitHandler = (e) => {
       e.preventDefault();
+      console.log("~ enteredExpense", enteredExpense);
       onSaveExpenseData(enteredExpense);
       setEnteredExpense(initialExpense);
+      onHideForm();
    };
 
    return (
@@ -57,11 +64,14 @@ function ExpenseForm({ onSaveExpenseData }) {
                   min="2019-01-01"
                   max="2022-12-31"
                   onChange={expenseChangeHandler("date")}
-                  value={enteredExpense.date}
+                  value={dateToString(enteredExpense.date)}
                />
             </div>
          </div>
          <div className="new-expense__actions">
+            <button type="submit" onClick={onHideForm}>
+               Cancel
+            </button>
             <button type="submit">Add expense</button>
          </div>
       </form>
@@ -69,3 +79,13 @@ function ExpenseForm({ onSaveExpenseData }) {
 }
 
 export default ExpenseForm;
+
+function dateToString(date) {
+   if (typeof date === "string") {
+      return date;
+   }
+   const month = date.toLocaleString("en-US", { month: "2-digit" });
+   const year = date.getFullYear();
+   const day = date.toLocaleString("en-US", { day: "2-digit" });
+   return `${year}-${month}-${day}`;
+}
